@@ -48,8 +48,8 @@ int main(int argc, char* argv[])
     // MAXNUMP*sizeof(struct st_procinfo)：共享内存的大小，MAXNUMP个st_procinfo
     // 0666：权限，允许创建者和同组用户读写，其他用户只读；IPC_CREAT：如果不存在则创建
     // st_procinfo是进程心跳的结构体，定义在_public.h中
-    int shmid=0;
-	if ( (shmid = shmget((key_t)SHMKEYP, MAXNUMP*sizeof(struct st_procinfo), 0666|IPC_CREAT)) == -1)
+    int shmid = 0;
+    if ((shmid = shmget((key_t)SHMKEYP, MAXNUMP * sizeof(struct st_procinfo), 0666 | IPC_CREAT)) == -1)
     {
         logfile.write("[get shared memory failed] shmget(%d)\n",SHMKEYP);
         return false;
