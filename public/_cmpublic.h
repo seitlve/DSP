@@ -1,11 +1,12 @@
-/****************************************************************************************
- *   程序名：_cmpublic.h，此程序是开发框架公用头文件，包含了应用开发常用的头文件。      
- *   作者：吴从周 
-*****************************************************************************************/
+/*
+    程序名：_cmpublic.h
+    此程序是开发框架公用头文件，包含了应用开发常用的头文件
+*/
 
 #ifndef _cmpublic_H
 #define _cmpublic_H
 
+// C
 #include <stdio.h>
 #include <utime.h>
 #include <string.h>
@@ -40,7 +41,7 @@
 #include <sys/timerfd.h>
 #include <sys/signalfd.h>
 
-
+// C++
 #include <atomic>
 #include <iostream>
 #include <fstream>
@@ -52,10 +53,10 @@
 #include <vector>
 #include <deque>
 #include <memory>
-#include <mutex>                      // 互斥锁类的头文件。
-#include <queue>                      // queue容器的头文件。
-#include <condition_variable>  // 条件变量的头文件。
+#include <mutex>                      
+#include <queue>                      
+#include <condition_variable>  
 #include <algorithm>
-#include <thread>                // 线程类头文件。
+#include <thread>                
 
 #endif
