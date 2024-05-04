@@ -1,8 +1,17 @@
 {
     "cSpell.words": [
+        "checkproc",
+        "clogfile",
+        "closeioandsignal",
         "cmpublic",
+        "cpactive",
+        "deletefiles",
+        "killall",
+        "MAXNUMP",
         "ooci",
+        "pactive",
         "pargs",
-        "procctl"
+        "procctl",
+        "SHMKEYP"
     ]
 }
