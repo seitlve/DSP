@@ -2,11 +2,11 @@
 BINDIR = /DSP/bin/tools/
 
 ########################
-# 开发框架头文件路径。
-PUBINCL = -I/project/public
+# 开发框架头文件路径，使用相对路径
+PUBINCL = -I../public
 
 # 开发框架cpp文件名，直接和程序的源代码文件一起编译，没有采用链接库，是为了方便调试。
-PUBCPP = /project/public/_public.cpp
+PUBCPP = ../public/_public.cpp
 
 ##################################################
 # oracle头文件路径
@@ -19,17 +19,20 @@ ORALIB =  -L$(ORACLE_HOME)/lib -L.
 ORALIBS = -lclntsh
 
 # 开发框架oracle的cpp文件名，这里直接包含进来，没有采用链接库，是为了方便调试。
-ORACPP = /project/public/db/oracle/_ooci.cpp
+ORACPP = ../public/db/oracle/_ooci.cpp
 ##################################################
 
 # 编译选项
 CFLAGS = -g
 #CFLAGS = -O2
 
-all:procctl
+all:$(BINDIR)procctl $(BINDIR)checkproc
 
-procctl:procctl.cpp
+$(BINDIR)procctl:procctl.cpp
 	g++ $(CFLAGS) -o $(BINDIR)procctl procctl.cpp
 
+$(BINDIR)checkproc:checkproc.cpp $(PUBCPP)
+	g++ $(CFLAGS) -o $(BINDIR)checkproc checkproc.cpp $(PUBCPP) $(PUBINCL)
+
 clean:
-	rm -f $(BINDIR)procctl
+	rm -rf $(BINDIR)procctl $(BINDIR)checkproc
