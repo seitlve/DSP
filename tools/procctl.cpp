@@ -16,17 +16,17 @@ int main(int argc, char* argv[])
     if (argc<3)
     {
         cout << "\n\nUsing:procctl <time> <program> <parameters>\n"
-             << "Example:/MDC/bin/tools/procctl 10 /MDC/bin/tools/checkproc /MDC/log/tools/checkproc.log\n\n"
-
-             << "本程序是系统程序的调度程序，周期性启动系统程序或shell脚本\n"
-             << "参数说明：\n"
-             << "time：运行周期，单位为秒\n"  
-             << "      在被调度的程序执行结束后，等待time秒再次启动\n"
-             << "      如果是周期执行的程序，调度程序每隔time秒启动一次\n"
-             << "      如果是常驻内存的程序，调度程序负责在程序异常终止后重启\n"
-             << "program：要启动的程序或shell脚本，必须使用绝对路径\n"
-             << "parameters：程序的参数\n"
-             << "注意，本程序不会被kill杀死，但可以用kill -9强行杀死\n\n";
+                "Example:/MDC/bin/tools/procctl 10 /MDC/bin/tools/checkproc /MDC/log/tools/checkproc.log\n\n"
+                
+                "本程序是系统程序的调度程序，周期性启动系统程序或shell脚本\n"
+                "参数说明：\n"
+                "time：运行周期，单位为秒\n"  
+                "      在被调度的程序执行结束后，等待time秒再次启动\n"
+                "      如果是周期执行的程序，调度程序每隔time秒启动一次\n"
+                "      如果是常驻内存的程序，调度程序负责在程序异常终止后重启\n"
+                "program：要启动的程序或shell脚本，必须使用绝对路径\n"
+                "parameters：程序的参数\n"
+                "注意，本程序不会被kill杀死，但可以用kill -9强行杀死\n\n";
 
         return -1;
     }

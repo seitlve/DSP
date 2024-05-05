@@ -17,15 +17,15 @@ int main(int argc, char* argv[])
     if (argc != 4)
     {
         cout << "\n\nUsing:gzipfiles pathname matchstr timeout\n\n"
-             << "Example:\n"
+                "Example:\n"
              // 在R"()"里面的写字符串，特殊符号不需要转移转义，同时转义字符如\n也不会生效
-             << R"(      /MDC/bin/tools/gzipfiles /log/idc "*.log.20*" 0.02)"
-             << "\n      /MDC/bin/tools/gzipfiles /tmp/idc/surfdata \"*.xml,*.json\" 0.01\n\n"
-
-             << "这是一个工具程序，用于压缩历史的数据文件或日志文件\n"
-             << "本程序把pathname目录及子目录中timeout天之前的匹配matchstr并且未被压缩的文件全部压缩，timeout可以是小数\n"
-             << "本程序调用/usr/bin/gzip命令压缩文件，压缩后的文件存放在原目录中\n"
-             << "本程序不写日志文件，也不会在控制台输出任何信息\n\n";              
+                R"(      /MDC/bin/tools/gzipfiles /log/idc "*.log.20*" 0.02)"
+                "\n      /MDC/bin/tools/gzipfiles /tmp/idc/surfdata \"*.xml,*.json\" 0.01\n\n"
+                  
+                "这是一个工具程序，用于压缩历史的数据文件或日志文件\n"
+                "本程序把pathname目录及子目录中timeout天之前的匹配matchstr并且未被压缩的文件全部压缩，timeout可以是小数\n"
+                "本程序调用/usr/bin/gzip命令压缩文件，压缩后的文件存放在原目录中\n"
+                "本程序不写日志文件，也不会在控制台输出任何信息\n\n";              
 
         return -1;
 	}

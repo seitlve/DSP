@@ -26,7 +26,7 @@ ORACPP = ../public/db/oracle/_ooci.cpp
 CFLAGS = -g
 #CFLAGS = -O2
 
-all:$(BINDIR)procctl $(BINDIR)checkproc $(BINDIR)deletefiles $(BINDIR)gzipfiles
+all:$(BINDIR)procctl $(BINDIR)checkproc $(BINDIR)deletefiles $(BINDIR)gzipfiles $(BINDIR)ftpgetfiles
 
 $(BINDIR)procctl:procctl.cpp
 	g++ $(CFLAGS) -o $(BINDIR)procctl procctl.cpp
@@ -40,5 +40,8 @@ $(BINDIR)deletefiles:deletefiles.cpp $(PUBCPP)
 $(BINDIR)gzipfiles:gzipfiles.cpp $(PUBCPP)
 	g++ $(CFLAGS) -o $(BINDIR)gzipfiles gzipfiles.cpp $(PUBCPP) $(PUBINCL)
 
+$(BINDIR)ftpgetfiles:ftpgetfiles.cpp $(PUBCPP)
+	g++ $(CFLAGS) -o $(BINDIR)ftpgetfiles ftpgetfiles.cpp $(PUBCPP) ../public/_ftp.cpp $(PUBINCL) ../public/libftp.a
+
 clean:
-	rm -rf $(BINDIR)procctl $(BINDIR)checkproc $(BINDIR)deletefiles $(BINDIR)gzipfiles
+	rm -rf $(BINDIR)procctl $(BINDIR)checkproc $(BINDIR)deletefiles $(BINDIR)gzipfiles $(BINDIR)ftpgetfiles

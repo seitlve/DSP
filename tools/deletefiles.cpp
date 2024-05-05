@@ -17,14 +17,14 @@ int main(int argc, char* argv[])
     if (argc != 4)
     {
         cout << "\n\nUsing:deletefiles pathname matchstr timeout\n\n"
-             << "Example:\n"
-             // 在R"()"里面的写字符串，特殊符号不需要转移转义，同时转义字符如\n也不会生效
-             << R"(      /MDC/bin/tools/deletefiles /log/idc "*.log.20*" 0.02)"
-             << "\n      /MDC/bin/tools/deletefiles /tmp/idc/surfdata \"*.xml,*.json\" 0.01\n\n"
+                "Example:\n"
+                // 在R"()"里面的写字符串，特殊符号不需要转移转义，同时转义字符如\n也不会生效
+                R"(      /MDC/bin/tools/deletefiles /log/idc "*.log.20*" 0.02)"
+                "\n      /MDC/bin/tools/deletefiles /tmp/idc/surfdata \"*.xml,*.json\" 0.01\n\n"
 
-             << "这是一个工具程序，用于删除历史的数据文件或日志文件\n"
-             << "本程序把pathname目录及子目录中timeout天之前的匹配matchstr文件全部删除，timeout可以是小数\n"
-             << "本程序不写日志文件，也不会在控制台输出任何信息\n\n";              
+                "这是一个工具程序，用于删除历史的数据文件或日志文件\n"
+                "本程序把pathname目录及子目录中timeout天之前的匹配matchstr文件全部删除，timeout可以是小数\n"
+                "本程序不写日志文件，也不会在控制台输出任何信息\n\n";              
 
         return -1;
 	}
