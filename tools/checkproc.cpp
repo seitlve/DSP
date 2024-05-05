@@ -20,13 +20,13 @@ int main(int argc, char* argv[])
     if (argc != 2)
     {
         cout << "\n\nUsing:checkproc logfilename\n"
-             << "Example:/DSP/bin/tools/procctl 10 /DSP/bin/tools/checkproc /DSP/log/tools/checkproc.log\n\n"
-
-             << "本程序用于检查后台服务程序是否超时，如果已超时，就终止它\n"
-             << "注意：\n"
-             << "  1）本程序由procctl启动，运行周期建议为10秒\n"
-             << "  2）为了避免被普通用户误杀，本程序应该用root用户启动\n"
-             << "  3）如果要停止本程序，只能用killall -9 终止\n\n";
+                "Example:/MDC/bin/tools/procctl 10 /MDC/bin/tools/checkproc /MDC/log/tools/checkproc.log\n\n"
+                
+                "本程序用于检查后台服务程序是否超时，如果已超时，就终止它\n"
+                "注意：\n"
+                "  1）本程序由procctl启动，运行周期建议为10秒\n"
+                "  2）为了避免被普通用户误杀，本程序应该用root用户启动\n"
+                "  3）如果要停止本程序，只能用killall -9 终止\n\n";
 
         return -1;
     }
