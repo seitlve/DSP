@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
     if (argc<3)
     {
         cout << "\n\nUsing:procctl <time> <program> <parameters>\n"
-             << "Example:/DSP/bin/tools/procctl 10 /DSP/bin/tools/checkproc /DSP/log/tools/checkproc.log\n\n"
+             << "Example:/MDC/bin/tools/procctl 10 /MDC/bin/tools/checkproc /MDC/log/tools/checkproc.log\n\n"
 
              << "本程序是系统程序的调度程序，周期性启动系统程序或shell脚本\n"
              << "参数说明：\n"

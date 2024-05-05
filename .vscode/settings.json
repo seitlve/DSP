@@ -1,17 +1,27 @@
 {
     "cSpell.words": [
+        "addpinfo",
         "checkproc",
         "clogfile",
         "closeioandsignal",
         "cmpublic",
         "cpactive",
         "deletefiles",
+        "ffilename",
+        "gzipfile",
+        "gzipfiles",
         "killall",
+        "ltime",
+        "matchstr",
         "MAXNUMP",
         "ooci",
         "pactive",
         "pargs",
         "procctl",
-        "SHMKEYP"
+        "SHMKEYP",
+        "strcmd",
+        "surfdata",
+        "uptatime",
+        "yyyymmddhh"
     ]
 }

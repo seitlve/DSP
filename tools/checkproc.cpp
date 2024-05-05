@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
     if (argc != 2)
     {
         cout << "\n\nUsing:checkproc logfilename\n"
-             << "Example:/DSP/bin/tools/procctl 10 /DSP/bin/tools/checkproc /DSP/log/tools/checkproc.log\n\n"
+             << "Example:/MDC/bin/tools/procctl 10 /MDC/bin/tools/checkproc /MDC/log/tools/checkproc.log\n\n"
 
              << "本程序用于检查后台服务程序是否超时，如果已超时，就终止它\n"
              << "注意：\n"
