@@ -27,7 +27,7 @@ CFLAGS = -g
 #CFLAGS = -O2
 
 all:$(BINDIR)procctl $(BINDIR)checkproc $(BINDIR)deletefiles $(BINDIR)gzipfiles \
-	$(BINDIR)ftpgetfiles $(BINDIR)ftpputfiles
+	$(BINDIR)ftpgetfiles $(BINDIR)ftpputfiles $(BINDIR)tcpgetfiles
 
 $(BINDIR)procctl:procctl.cpp
 	g++ $(CFLAGS) -o $(BINDIR)procctl procctl.cpp
@@ -47,6 +47,9 @@ $(BINDIR)ftpgetfiles:ftpgetfiles.cpp $(PUBCPP)
 $(BINDIR)ftpputfiles:ftpputfiles.cpp $(PUBCPP)
 	g++ $(CFLAGS) -o $(BINDIR)ftpputfiles ftpputfiles.cpp $(PUBCPP) ../public/_ftp.cpp $(PUBINCL) ../public/libftp.a
 
+$(BINDIR)tcpgetfiles:tcpgetfiles.cpp $(PUBCPP)
+	g++ $(CFLAGS) -o $(BINDIR)tcpgetfiles tcpgetfiles.cpp $(PUBCPP) $(PUBINCL)
+
 clean:
 	rm -rf $(BINDIR)procctl $(BINDIR)checkproc $(BINDIR)deletefiles $(BINDIR)gzipfiles 
-	rm -rf $(BINDIR)ftpgetfiles $(BINDIR)ftpputfiles
+	rm -rf $(BINDIR)ftpgetfiles $(BINDIR)ftpputfiles $(BINDIR)tcpgetfiles
