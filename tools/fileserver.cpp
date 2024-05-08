@@ -133,13 +133,14 @@ bool clientlogin()
 {
     memset(&starg, 0, sizeof(struct st_arg));
 
-    logfile.write("[clientlogin] recv ... ");
+    //[Debug] logfile.write("[clientlogin] recv ... ");
     if (tcpserver.read(recvbuffer) == false)
     {
-        logfile << "failed\n";
+        //[Debug] logfile << "failed\n";
+        logfile.write("[clientlogin: recv buffer failed] tcpserver.read(%s)\n", recvbuffer.c_str());
         return false;
     }
-    logfile << "success\n";
+    //[Debug] logfile << "success\n";
 
     // 不需要对参数做合法性检验，因为客户端已经做过了
     getxmlbuffer(recvbuffer, "clienttype", starg.clienttype);
@@ -181,22 +182,24 @@ bool activetest()
 {
     sendbuffer = "<activetest>ok</activetest>";
 
-    logfile.write("[activetest] send %s ... ", sendbuffer.c_str());
+    //[Debug] logfile.write("[activetest] send %s ... ", sendbuffer.c_str());
     if (tcpserver.write(sendbuffer) == false)
     {
-        logfile << "failed\n";
+        //[Debug] logfile << "failed\n";
+        logfile.write("[activetest: send buffer failed] tcpserver.write(%s)\n", sendbuffer.c_str());
         return false;
     }
-    logfile << "success\n";
+    //[Debug] logfile << "success\n";
 
     // 接收对端的心跳报文
-    logfile.write("[activetest] recv ... ", sendbuffer);
+    //[Debug] logfile.write("[activetest] recv ... ", sendbuffer);
     if (tcpserver.read(recvbuffer, 20) == false)
     {
-        logfile << "failed\n";
+        //[Debug] logfile << "failed\n";
+        logfile.write("[activetest: recv buffer failed] tcpserver.read\n");
         return false;
     }
-    logfile << "success\n";
+    //[Debug] logfile << "success\n";
 
     return true;
 }
@@ -219,6 +222,8 @@ void sendfilesmain()
 
             if (activetest() == false) return;
         }
+
+        pactive.uptatime();
     }
 }
 
@@ -247,13 +252,14 @@ bool _sendfiles(bool& bcontinue)
         sformat(sendbuffer, "<filename>%s</filename><filesize>%d</filesize><mtime>%s</mtime>", 
             dir.m_filename.c_str(), dir.m_filesize, dir.m_mtime.c_str());
         
-        logfile.write("[_sendfiles] send %s ... ", sendbuffer.c_str());
+        //[Debug] logfile.write("[_sendfiles] send %s ... ", sendbuffer.c_str());
         if (tcpserver.write(sendbuffer) == false)
         {
-            logfile << "failed\n";
+            //[Debug] logfile << "failed\n";
+            logfile.write("[_sendfiles: send buffer failed] tcpserver.write(%s)\n", sendbuffer.c_str());
             return false;
         }
-        logfile << "success\n";
+        //[Debug] logfile << "success\n";
 
         // 再发送文件
         logfile.write("[_sendfiles] send %s(%d) ... ", dir.m_filename.c_str(), dir.m_filesize);
@@ -264,6 +270,8 @@ bool _sendfiles(bool& bcontinue)
         }
         logfile << "success\n";
         ++delayed;
+
+        pactive.uptatime();
 
         while (delayed > 0)
         {
@@ -355,24 +363,27 @@ void recvfilesmain()
 
     while (true)
     {
-        if (tcpserver.read(recvbuffer) == false)
+        pactive.uptatime();
+
+        if (tcpserver.read(recvbuffer, starg.timetvl + 10) == false)
         {
             logfile.write("[recvfilesmain: recv buffer failed]\n");
             return;
         }
-        logfile.write("[recvfilesmain] recv %s\n", recvbuffer.c_str());
+        //[debug] logfile.write("[recvfilesmain] recv %s\n", recvbuffer.c_str());
 
         // 处理心跳报文
         if (recvbuffer == "<activetest>ok</activetest>")
         {
             sendbuffer = "ok";
-            logfile.write("[recvfilesmain] send %s ... ", sendbuffer.c_str());
+            //[Debug] logfile.write("[recvfilesmain] send %s ... ", sendbuffer.c_str());
             if (tcpserver.write(sendbuffer) == false)
             {
-                logfile << "failed\n";
+                //[Debug] logfile << "failed\n";
+                logfile.write("[recvfilesmain: send buffer failed] tcpserver.write(%s)\n", sendbuffer.c_str());
                 return;
             }
-            logfile << "success\n";
+            //[Debug] logfile << "success\n";
         }
 
         // 处理上传文件的请求报文
@@ -388,19 +399,27 @@ void recvfilesmain()
 
             string localfile = sformat("%s/%s", starg.srvpath, filename.c_str());
             sendbuffer = sformat("<filename>%s</filename>", filename.c_str());
+            logfile.write("[_tcpgetfiles] recv %s(%d) ... ", localfile.c_str(), filesize);
             if (recvfile(localfile, mtime, filesize) == false)
-                sendbuffer.append("<result>failed</result>");
-            else
-                sendbuffer.append("<result>success</result>");
-
-            // 返回确认报文
-            logfile.write("[recvfilesmain] send %s ... ", sendbuffer.c_str());
-            if (tcpserver.write(sendbuffer) == false)
             {
                 logfile << "failed\n";
+                sendbuffer.append("<result>failed</result>");
+            }
+            else
+            {
+                logfile << "success\n";
+                sendbuffer.append("<result>success</result>");
+            }
+
+            // 返回确认报文
+            //[Debug] logfile.write("[recvfilesmain] send %s ... ", sendbuffer.c_str());
+            if (tcpserver.write(sendbuffer) == false)
+            {
+                //[Debug] logfile << "failed\n";
+                logfile.write("[recvfilesmain: send buffer failed] tcpserver.write(%s)\n", sendbuffer.c_str());
                 return;
             }
-            logfile << "success\n";
+            //[Debug] logfile << "success\n";
         }
     }
 }

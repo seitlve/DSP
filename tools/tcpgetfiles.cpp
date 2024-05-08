@@ -92,22 +92,24 @@ bool login(const char* argv)
     // 登录报文包含客户端的类型以及其它服务端所需的信息，这里直接将整个argv[2]传过去更方便
     sformat(sendbuffer, "%s<clienttype>1</clienttype>", argv);
 
-    logfile.write("[login] send %s ... ", sendbuffer.c_str());
+    //[Debug] logfile.write("[login] send %s ... ", sendbuffer.c_str());
     if (tcpclient.write(sendbuffer) == false) 
     {
-        logfile << "failed\n";
+        //[Debug] logfile << "failed\n";
+        logfile.write("[login: send buffer failed] tcpclient.write(%s)\n", sendbuffer.c_str());
         return false;
     }
-    logfile << "success\n";
+    //[Debug] logfile << "success\n";
 
     // 接收服务端的报文
-    logfile.write("[login] recv ... ");
+    //[Debug] logfile.write("[login] recv ... ");
     if (tcpclient.read(recvbuffer) == false)
     {
-        logfile << "failed\n";
+        //[Debug] logfile << "failed\n";
+        logfile.write("[login: recv buffer failed] tcpclient.read()\n");
         return false;
     }
-    logfile << "success\n";
+    //[Debug] logfile << "success\n";
 
     if (recvbuffer == "failed") return false;
 
@@ -118,13 +120,16 @@ void _tcpgetfiles()
 {
     while (true)
     {
-        logfile.write("[_tcpgetfiles] recv ... ");
-        if (tcpclient.read(recvbuffer) == false)
+        pactive.uptatime();
+
+        //[Debug] logfile.write("[_tcpgetfiles] recv ... ");
+        if (tcpclient.read(recvbuffer, starg.timetvl+10) == false)
         {
-            logfile << "failed\n";
+            //[Debug] logfile << "failed\n";
+            logfile.write("[[_tcpgetfiles: recv buffer failed] tcpclient.read()\n");
             return;
         }
-        logfile << sformat("success, buffer: %s\n", recvbuffer.c_str());
+        //[Debug] logfile << sformat("success, buffer: %s\n", recvbuffer.c_str());
 
         // 处理心跳报文
         if (recvbuffer == "<activetest>ok</activetest>")
@@ -150,19 +155,27 @@ void _tcpgetfiles()
 
             string localfile = sformat("%s/%s", starg.clientpath, filename.c_str());
             sendbuffer = sformat("<filename>%s</filename>", filename.c_str());
+            logfile.write("[_tcpgetfiles] recv %s(%d) ... ", localfile.c_str(), filesize);
             if (recvfile(localfile, mtime, filesize) == false)
-                sendbuffer.append("<result>failed</result>");
-            else
-                sendbuffer.append("<result>success</result>");
-
-            // 返回确认报文
-            logfile.write("[_tcpgetfiles] send %s ... ", sendbuffer.c_str());
-            if (tcpclient.write(sendbuffer) == false)
             {
                 logfile << "failed\n";
+                sendbuffer.append("<result>failed</result>");
+            }
+            else
+            {
+                logfile << "success\n";
+                sendbuffer.append("<result>success</result>");
+            }
+
+            // 返回确认报文
+            //[Debug] logfile.write("[_tcpgetfiles] send %s ... ", sendbuffer.c_str());
+            if (tcpclient.write(sendbuffer) == false)
+            {
+                //[Debug] logfile << "failed\n";
+                logfile.write("[_tcpgetfiles: send buffer failed] tcpclient.write(%s)\n", sendbuffer.c_str());
                 return;
             }
-            logfile << "success\n";
+            //[Debug] logfile << "success\n";
         }
     }
 }
@@ -201,7 +214,7 @@ bool recvfile(const string& filename, const string& mtime, const int filesize)
 
 void EXIT(int sig)
 {
-    logfile.write("[process exit] sig=%d", sig);
+    logfile.write("[process exit] sig=%d\n", sig);
 
     exit(0);
 }
