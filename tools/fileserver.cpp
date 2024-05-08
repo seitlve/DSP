@@ -13,7 +13,9 @@
         b)发送端发送文件（接收端根据文件名和大小接收文件，接收完后再设置文件修改时间）
         c)接收端收到文件后返回确认报文（文件名+接收结果），发送端接收确认报文
           如果接收失败，接收端不退出，接收结果为false，发送端不处理文件（删除、备份）
+          将再下次发送文件时将上传发送失败的文件重传
           如果发送端断开连接，接收端发送确保报文时会失败，届时再退出
+          发送端删除或备份文件失败时，写日志但不退出
 */
 
 #include "_public.h"
@@ -63,7 +65,7 @@ int main(int argc, char* argv[])
         cout << "\n\n"
         "Using:fileserver logfilename port\n"
         "Example:\n"
-        "/MDC/bin/tools/procctl 10 /MDC/bin/tools/fileserver /log/idc/fileserver.log 5005\n\n";
+        "/MDC/bin/tools/procctl 10 /MDC/bin/tools/fileserver /MDC/log/tools/fileserver.log 5005\n\n";
 
         return -1;
     }
@@ -165,7 +167,7 @@ bool clientlogin()
     }
 
     // 如果是非法客户端
-    if (strcmp(sendbuffer.c_str(), "false"))
+    if (sendbuffer == "failed")
     {
         logfile.write("[clientlogin] clienttype is illegal\n");
         return false;
@@ -179,7 +181,7 @@ bool activetest()
 {
     sendbuffer = "<activetest>ok</activetest>";
 
-    logfile.write("[activetest] send %s ... ", sendbuffer);
+    logfile.write("[activetest] send %s ... ", sendbuffer.c_str());
     if (tcpserver.write(sendbuffer) == false)
     {
         logfile << "failed\n";
@@ -245,7 +247,7 @@ bool _sendfiles(bool& bcontinue)
         sformat(sendbuffer, "<filename>%s</filename><filesize>%d</filesize><mtime>%s</mtime>", 
             dir.m_filename.c_str(), dir.m_filesize, dir.m_mtime.c_str());
         
-        logfile.write("[_sendfiles] send %s ... ");
+        logfile.write("[_sendfiles] send %s ... ", sendbuffer.c_str());
         if (tcpserver.write(sendbuffer) == false)
         {
             logfile << "failed\n";
@@ -267,10 +269,10 @@ bool _sendfiles(bool& bcontinue)
         {
             // 接收对端的确认报文，时间设置为-1，表示不等待，如果接收缓冲区没有报文就继续发送文件
             if (tcpserver.read(recvbuffer, -1) == false) break;
-
+            
             ackmessage(recvbuffer);
             --delayed;
-        }  
+        } 
     }
 
     // 接收剩余的确认报文
@@ -288,8 +290,8 @@ bool _sendfiles(bool& bcontinue)
 // 以二进制的形式发送文件
 bool sendfile(const string& filename, const int filesize)
 {
-    int onread;         // 将要读取的字节数
-    int totalbytes;     // 已经读取的总字节数
+    int onread = 0;     // 将要读取的字节数
+    int totalbytes = 0; // 已经读取的总字节数
     char buffer[1024];  // 存放读取的数据
     cifile ifile;
 
@@ -299,11 +301,11 @@ bool sendfile(const string& filename, const int filesize)
     {
         memset(buffer, 0, sizeof(buffer));
 
-        onread = (filesize - totalbytes >= 1024) ? 1024 : (filesize - totalbytes);
+        onread = (filesize - totalbytes) > 1024 ? 1024 : (filesize - totalbytes);
 
         ifile.read(buffer, onread);
 
-        if (tcpserver.write(buffer) == false) return false;
+        if (tcpserver.write(buffer, onread) == false) return false;
 
         totalbytes += onread;
     }
@@ -324,7 +326,7 @@ bool ackmessage(const string& recvbuffer)
     // 如果接收端成功收到文件，则删除或备份发送端文件
     if (starg.ptype == 1)
     {
-        string removefile = sformat("%s/%s", starg.srvpath, filename);
+        string removefile = sformat("%s/%s", starg.srvpath, filename.c_str());
         if (remove(removefile.c_str()) != 0)
         {
             logfile.write("[ackmessage: remove file failed] remove(%s)\n", removefile.c_str());
@@ -333,8 +335,8 @@ bool ackmessage(const string& recvbuffer)
     }
     else if (starg.ptype == 2)
     {
-        string rscfile = sformat("%s/%s", starg.srvpath, filename);
-        string dstfile = sformat("%s/%s", starg.srvpathbak, filename);
+        string rscfile = sformat("%s/%s", starg.srvpath, filename.c_str());
+        string dstfile = sformat("%s/%s", starg.srvpathbak, filename.c_str());
         if (rename(rscfile.c_str(), dstfile.c_str()) != 0)
         {
             logfile.write("[ackmessage: bak file failed] rename(%s, %s)\n", rscfile.c_str(), dstfile.c_str());
@@ -416,7 +418,7 @@ bool recvfile(const string& filename, const string& mtime, const int filesize)
     {
         memset(buffer, 0, sizeof(buffer));
 
-        onread = (filesize - totalbytes) > 0 ? 1024 : (filesize - totalbytes);
+        onread = (filesize - totalbytes) > 1024 ? 1024 : (filesize - totalbytes);
 
         if (tcpserver.read(buffer, onread) == false) return false;
 
@@ -437,7 +439,7 @@ void FathEXIT(int sig)
     // 防止信号处理函数在执行的过程中被信号中断。
     signal(SIGINT,SIG_IGN); signal(SIGTERM,SIG_IGN);
 
-    logfile.write("[father process exit] sig=%d", sig);
+    logfile.write("[father process exit] sig=%d\n", sig);
 
     tcpserver.closelisten();
 
@@ -451,7 +453,7 @@ void ChldEXIT(int sig)
     // 防止信号处理函数在执行的过程中被信号中断。
     signal(SIGINT,SIG_IGN); signal(SIGTERM,SIG_IGN);
 
-    logfile.write("[child process exit] sig=%d", sig);
+    logfile.write("[child process exit] sig=%d\n", sig);
 
     tcpserver.closeclient();
 

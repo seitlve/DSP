@@ -92,7 +92,7 @@ bool login(const char* argv)
     // 登录报文包含客户端的类型以及其它服务端所需的信息，这里直接将整个argv[2]传过去更方便
     sformat(sendbuffer, "%s<clienttype>1</clienttype>", argv);
 
-    logfile.write("[login] send %s ... ", sendbuffer);
+    logfile.write("[login] send %s ... ", sendbuffer.c_str());
     if (tcpclient.write(sendbuffer) == false) 
     {
         logfile << "failed\n";
@@ -107,7 +107,9 @@ bool login(const char* argv)
         logfile << "failed\n";
         return false;
     }
-    logfile << "success, buffer=%s\n";
+    logfile << "success\n";
+
+    if (recvbuffer == "failed") return false;
 
     return true;
 }
@@ -116,12 +118,13 @@ void _tcpgetfiles()
 {
     while (true)
     {
+        logfile.write("[_tcpgetfiles] recv ... ");
         if (tcpclient.read(recvbuffer) == false)
         {
-            logfile.write("[_tcpgetfiles: recv buffer failed]\n");
+            logfile << "failed\n";
             return;
         }
-        logfile.write("[_tcpgetfiles] recv %s\n", recvbuffer.c_str());
+        logfile << sformat("success, buffer: %s\n", recvbuffer.c_str());
 
         // 处理心跳报文
         if (recvbuffer == "<activetest>ok</activetest>")
@@ -153,11 +156,13 @@ void _tcpgetfiles()
                 sendbuffer.append("<result>success</result>");
 
             // 返回确认报文
+            logfile.write("[_tcpgetfiles] send %s ... ", sendbuffer.c_str());
             if (tcpclient.write(sendbuffer) == false)
             {
-                logfile.write("[_tcpgetfiles: send buffer failed] tcpclient.write(%s)\n", sendbuffer.c_str());
+                logfile << "failed\n";
                 return;
             }
+            logfile << "success\n";
         }
     }
 }
@@ -179,7 +184,7 @@ bool recvfile(const string& filename, const string& mtime, const int filesize)
     {
         memset(buffer, 0, sizeof(buffer));
 
-        onread = (filesize - totalbytes) > 0 ? 1024 : (filesize - totalbytes);
+        onread = (filesize - totalbytes) > 1024 ? 1024 : (filesize - totalbytes);
 
         if (tcpclient.read(buffer, onread) == false) return false;
 
@@ -203,6 +208,7 @@ void EXIT(int sig)
 
 void _help()
 {
+    cout << "\n\n"
     "Using:/MDC/bin/tools/tcpgetfiles logfilename xmlbuffer\n\n"
 
     "Example:\n"
@@ -240,7 +246,7 @@ bool _xmltoarg(const string& xmlbuffer)
     if (starg.port == 0) { logfile.write("port is null\n"); return false; }
 
     getxmlbuffer(xmlbuffer, "ptype", starg.ptype);
-    if ((starg.port != 1) && (starg.port != 2)) 
+    if ((starg.ptype != 1) && (starg.ptype != 2)) 
     { logfile.write("ptype must in {1,2}\n"); return false; }
 
     getxmlbuffer(xmlbuffer, "srvpath", starg.srvpath, 255);

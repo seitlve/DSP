@@ -95,7 +95,7 @@ bool login(const char* argv)
     // 登录报文包含客户端的类型以及其它服务端所需的信息，这里直接将整个argv[2]传过去更方便
     sformat(sendbuffer, "%s<clienttype>2</clienttype>", argv);
 
-    logfile.write("[login] send %s ... ", sendbuffer);
+    logfile.write("[login] send %s ... ", sendbuffer.c_str());
     if (tcpclient.write(sendbuffer) == false) 
     {
         logfile << "failed\n";
@@ -110,7 +110,7 @@ bool login(const char* argv)
         logfile << "failed\n";
         return false;
     }
-    logfile << "success, buffer=%s\n";
+    logfile << sformat("success, buffer=%s\n", recvbuffer.c_str());
 
     return true;
 }
@@ -119,7 +119,7 @@ bool activetest()
 {
     sendbuffer = "<activetest>ok</activetest>";
 
-    logfile.write("[activetest] send %s ... ", sendbuffer);
+    logfile.write("[activetest] send %s ... ", sendbuffer.c_str());
     if (tcpclient.write(sendbuffer) == false)
     {
         logfile << "failed\n";
@@ -128,7 +128,7 @@ bool activetest()
     logfile << "success\n";
 
     // 接收对端的心跳报文
-    logfile.write("[activetest] recv ... ", sendbuffer);
+    logfile.write("[activetest] recv ... ");
     if (tcpclient.read(recvbuffer, 20) == false)
     {
         logfile << "failed\n";
@@ -181,7 +181,7 @@ bool _sendfiles(bool& bcontinue)
         sendbuffer = sformat("<filename>%s</filename><filesize>%d</filesize><mtime>%s</mtime>", 
             dir.m_filename.c_str(), dir.m_filesize, dir.m_mtime.c_str());
 
-        logfile.write("[_sendfiles] send %s ... ");
+        logfile.write("[_sendfiles] send %s ... ", sendbuffer.c_str());
         if (tcpclient.write(sendbuffer) == false)
         {
             logfile << "failed\n";
@@ -208,20 +208,92 @@ bool _sendfiles(bool& bcontinue)
             --delayed;
         }
     }
+
+    // 处理剩余的确认报文
+    while (delayed > 0)
+    {
+        if (tcpclient.read(recvbuffer, 10) == false) break;
+
+        ackmessage(recvbuffer);
+        --delayed;
+    }
+
+    return true;
 }
 
 bool sendfile(const string& filename, const int filesize)
 {
+    int onread = 0;
+    int totalbytes = 0;
+    char buffer[1024];
 
+    cifile ifile;
+    if (ifile.open(filename, ios::in | ios::binary) == false)
+    {
+        logfile.write("[sendfile: open file failed] ifile.open(%s)\n", filename.c_str());
+        return false;
+    }
+
+    while (totalbytes < filesize)
+    {
+        memset(buffer, 0, sizeof(buffer));
+
+        onread = (filesize - totalbytes) > 1024 ? 1024 : (filesize - totalbytes);
+
+        ifile.read(buffer, onread);
+
+        if (tcpclient.write(buffer, onread) == false) return false;
+
+        totalbytes += onread;
+    }
+
+    return true;
 }
 
 bool ackmessage(const string& recvbuffer)
 {
-    
+    string filename;
+    string result;
+
+    getxmlbuffer(recvbuffer, "filename", filename);
+    getxmlbuffer(recvbuffer, "result", result);
+
+    if (result != "success") return false;
+
+    if (starg.ptype == 1)
+    {
+        string removefile = sformat("%s/%s", starg.clientpath, filename.c_str());
+        if (remove(removefile.c_str()) != 0)
+        {
+            logfile.write("[ackmessage: remove file failed] remove(%s)\n", removefile.c_str());
+            return false;
+        }
+    }
+
+    if (starg.ptype == 2)
+    {
+        string rscfile = sformat("%s/%s", starg.clientpath, filename.c_str());
+        string dstfile = sformat("%s/%s", starg.clientpathbak, filename.c_str());
+        if (rename(rscfile.c_str(), dstfile.c_str()) == false)
+        {
+            logfile.write("[ackmessage: bak file failed] rename(%s, %s)\n", rscfile.c_str(), dstfile.c_str());
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void EXIT(int sig)
+{
+    logfile.write("[process exit] sig=%d", sig);
+
+    exit(0);
 }
 
 void _help()
 {
+    cout << "\n\n"
     "Using:/MDC/bin/tools/tcpputfiles logfilename xmlbuffer\n\n"
 
     "Example:\n"
@@ -259,7 +331,7 @@ bool _xmltoarg(const string& xmlbuffer)
     if (starg.port == 0) { logfile.write("port is null\n"); return false; }
 
     getxmlbuffer(xmlbuffer, "ptype", starg.ptype);
-    if ((starg.port != 1) && (starg.port != 2)) 
+    if ((starg.ptype != 1) && (starg.ptype != 2)) 
     { logfile.write("ptype must in {1,2}\n"); return false; }
 
     getxmlbuffer(xmlbuffer, "srvpath", starg.srvpath, 255);
