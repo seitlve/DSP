@@ -95,22 +95,26 @@ bool login(const char* argv)
     // 登录报文包含客户端的类型以及其它服务端所需的信息，这里直接将整个argv[2]传过去更方便
     sformat(sendbuffer, "%s<clienttype>2</clienttype>", argv);
 
-    logfile.write("[login] send %s ... ", sendbuffer.c_str());
+    //[Debug] logfile.write("[login] send %s ... ", sendbuffer.c_str());
     if (tcpclient.write(sendbuffer) == false) 
     {
-        logfile << "failed\n";
+        //[Debug] logfile << "failed\n";
+        logfile.write("[login: send buffer failed] tcpclient.write(%s)\n", sendbuffer.c_str());
         return false;
     }
-    logfile << "success\n";
+    //[Debug] logfile << "success\n";
 
     // 接收服务端的报文
-    logfile.write("[login] recv ... ");
+    //[Debug] logfile.write("[login] recv ... ");
     if (tcpclient.read(recvbuffer) == false)
     {
-        logfile << "failed\n";
+        //[Debug] logfile << "failed\n";
+        logfile.write("[login: recv buffer failed] tcpclient.read()\n");
         return false;
     }
-    logfile << sformat("success, buffer=%s\n", recvbuffer.c_str());
+    //[Debug] logfile << "success\n";
+
+    if (recvbuffer == "failed") return false;
 
     return true;
 }
@@ -119,22 +123,24 @@ bool activetest()
 {
     sendbuffer = "<activetest>ok</activetest>";
 
-    logfile.write("[activetest] send %s ... ", sendbuffer.c_str());
+    //[Debug] logfile.write("[activetest] send %s ... ", sendbuffer.c_str());
     if (tcpclient.write(sendbuffer) == false)
     {
-        logfile << "failed\n";
+        //[Debug] logfile << "failed\n";
+        logfile.write("[activetest: recv buffer failed] tcpclient.write(%s)\n", sendbuffer.c_str());
         return false;
     }
-    logfile << "success\n";
+    //[Debug] logfile << "success\n";
 
     // 接收对端的心跳报文
-    logfile.write("[activetest] recv ... ");
+    //[Debug] logfile.write("[activetest] recv ... ");
     if (tcpclient.read(recvbuffer, 20) == false)
     {
-        logfile << "failed\n";
+        //[Debug] logfile << "failed\n";
+        logfile.write("[activetest: recv buffer failed] tcpclient.read()\n");
         return false;
     }
-    logfile << "success\n";
+    //[Debug] logfile << "success\n";
 
     return true;
 }
@@ -157,6 +163,8 @@ void _tcpputfiles()
 
             if (activetest() == false) return;
         }
+
+        pactive.uptatime();
     }
 }
 
@@ -181,13 +189,14 @@ bool _sendfiles(bool& bcontinue)
         sendbuffer = sformat("<filename>%s</filename><filesize>%d</filesize><mtime>%s</mtime>", 
             dir.m_filename.c_str(), dir.m_filesize, dir.m_mtime.c_str());
 
-        logfile.write("[_sendfiles] send %s ... ", sendbuffer.c_str());
+        //[Debug] logfile.write("[_sendfiles] send %s ... ", sendbuffer.c_str());
         if (tcpclient.write(sendbuffer) == false)
         {
-            logfile << "failed\n";
+            //[Debug] logfile << "failed\n";
+            logfile.write("[_sendfiles: send buffer failed] tcpclient.write(%s)", sendbuffer.c_str());
             return false;
         }
-        logfile << "success\n";
+        //[Debug] logfile << "success\n";
 
         // 再发送文件
         logfile.write("[_sendfiles] send %s(%d) ... ", dir.m_filename.c_str(), dir.m_filesize);
@@ -198,6 +207,8 @@ bool _sendfiles(bool& bcontinue)
         }
         logfile << "success\n";
         ++delayed;
+
+        pactive.uptatime();
 
         while (delayed > 0)
         {
@@ -286,7 +297,7 @@ bool ackmessage(const string& recvbuffer)
 
 void EXIT(int sig)
 {
-    logfile.write("[process exit] sig=%d", sig);
+    logfile.write("[process exit] sig=%d\n", sig);
 
     exit(0);
 }
