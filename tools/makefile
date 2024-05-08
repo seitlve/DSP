@@ -26,8 +26,8 @@ ORACPP = ../public/db/oracle/_ooci.cpp
 CFLAGS = -g
 #CFLAGS = -O2
 
-all:$(BINDIR)procctl $(BINDIR)checkproc $(BINDIR)deletefiles $(BINDIR)gzipfiles \
-	$(BINDIR)ftpgetfiles $(BINDIR)ftpputfiles $(BINDIR)tcpgetfiles
+all:$(BINDIR)procctl $(BINDIR)checkproc $(BINDIR)deletefiles $(BINDIR)gzipfiles $(BINDIR)ftpgetfiles $(BINDIR)ftpputfiles \
+	$(BINDIR)tcpgetfiles $(BINDIR)tcpputfiles $(BINDIR)fileserver
 
 $(BINDIR)procctl:procctl.cpp
 	g++ $(CFLAGS) -o $(BINDIR)procctl procctl.cpp
@@ -50,6 +50,12 @@ $(BINDIR)ftpputfiles:ftpputfiles.cpp $(PUBCPP)
 $(BINDIR)tcpgetfiles:tcpgetfiles.cpp $(PUBCPP)
 	g++ $(CFLAGS) -o $(BINDIR)tcpgetfiles tcpgetfiles.cpp $(PUBCPP) $(PUBINCL)
 
+$(BINDIR)tcpputfiles:tcpputfiles.cpp $(PUBCPP)
+	g++ $(CFLAGS) -o $(BINDIR)tcpputfiles tcpputfiles.cpp $(PUBCPP) $(PUBINCL)
+
+$(BINDIR)fileserver:fileserver.cpp $(PUBCPP)
+	g++ $(CFLAGS) -o $(BINDIR)fileserver fileserver.cpp $(PUBCPP) $(PUBINCL)
+
 clean:
-	rm -rf $(BINDIR)procctl $(BINDIR)checkproc $(BINDIR)deletefiles $(BINDIR)gzipfiles 
-	rm -rf $(BINDIR)ftpgetfiles $(BINDIR)ftpputfiles $(BINDIR)tcpgetfiles
+	rm -rf $(BINDIR)procctl $(BINDIR)checkproc $(BINDIR)deletefiles $(BINDIR)gzipfiles $(BINDIR)ftpgetfiles $(BINDIR)ftpputfiles
+	rm -rf $(BINDIR)tcpgetfiles $(BINDIR)tcpputfiles $(BINDIR)fileserver

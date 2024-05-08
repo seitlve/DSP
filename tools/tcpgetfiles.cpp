@@ -31,10 +31,10 @@ ctcpclient tcpclient;   // tcp客户端
 string sendbuffer;      // 发送报文
 string recvbuffer;      // 接收报文
 
-// 登录函数，向服务端发送本程序的信息（运行参数）
-bool login(const char* argv);
+bool login(const char* argv); // 登录函数，向服务端发送本程序的信息（运行参数）
 
-bool _tcpgetfiles();    // 下载文件的主函数
+void _tcpgetfiles();    // 下载文件的主函数
+bool recvfile(const string& filename, const string& mtime, const int filesize); // 接收一次文件传输的函数，使用绝对路径        
 
 void EXIT(int sig);     // 退出函数
 void _help();           // 帮助文档
@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
     }
     logfile.write("[login success]\n");
 
-
+    _tcpgetfiles();
 
     return 0;
 }
@@ -112,9 +112,86 @@ bool login(const char* argv)
     return true;
 }
 
-bool _tcpgetfiles()
+void _tcpgetfiles()
 {
+    while (true)
+    {
+        if (tcpclient.read(recvbuffer) == false)
+        {
+            logfile.write("[_tcpgetfiles: recv buffer failed]\n");
+            return;
+        }
+        logfile.write("[_tcpgetfiles] recv %s\n", recvbuffer.c_str());
 
+        // 处理心跳报文
+        if (recvbuffer == "<activetest>ok</activetest>")
+        {
+            sendbuffer = "ok";
+            if (tcpclient.write(sendbuffer) == false)
+            {
+                logfile.write("[_tcpgetfiles: send buffer failed] tcpclient.write(%s)\n", sendbuffer.c_str());
+                return;
+            }
+        }
+
+        // 处理发送文件的请求报文
+        if (recvbuffer.find("<filename>") != string::npos)
+        {
+            string filename;
+            string mtime;
+            int filesize;
+
+            getxmlbuffer(recvbuffer, "filename", filename);
+            getxmlbuffer(recvbuffer, "mtime", mtime);
+            getxmlbuffer(recvbuffer, "filesize", filesize);
+
+            string localfile = sformat("%s/%s", starg.clientpath, filename.c_str());
+            sendbuffer = sformat("<filename>%s</filename>", filename.c_str());
+            if (recvfile(localfile, mtime, filesize) == false)
+                sendbuffer.append("<result>failed</result>");
+            else
+                sendbuffer.append("<result>success</result>");
+
+            // 返回确认报文
+            if (tcpclient.write(sendbuffer) == false)
+            {
+                logfile.write("[_tcpgetfiles: send buffer failed] tcpclient.write(%s)\n", sendbuffer.c_str());
+                return;
+            }
+        }
+    }
+}
+
+bool recvfile(const string& filename, const string& mtime, const int filesize)
+{
+    int onread = 0;
+    int totalbytes = 0;
+    char buffer[1024];
+
+    cofile ofile;
+    if (ofile.open(filename, true, ios::out | ios::binary) == false)
+    {
+        logfile.write("[getfile: open file failed] ofile.open(%s)\n", filename.c_str());
+        return false;
+    }
+
+    while (totalbytes < filesize)
+    {
+        memset(buffer, 0, sizeof(buffer));
+
+        onread = (filesize - totalbytes) > 0 ? 1024 : (filesize - totalbytes);
+
+        if (tcpclient.read(buffer, onread) == false) return false;
+
+        ofile.write(buffer, onread);
+
+        totalbytes += onread;
+    }
+    ofile.closeandrename();
+
+    setmtime(filename, mtime);
+
+    return true;
 }
 
 void EXIT(int sig)
@@ -174,6 +251,8 @@ bool _xmltoarg(const string& xmlbuffer)
         getxmlbuffer(xmlbuffer, "srvpathbak", starg.srvpathbak, 255);
         if (strlen(starg.srvpathbak) == 0) { logfile.write("srvpathbak is null\n"); return false; }
     }
+
+    getxmlbuffer(xmlbuffer, "andchild", starg.andchild);
 
     getxmlbuffer(xmlbuffer, "matchname", starg.matchname, 255);
     if (strlen(starg.matchname) == 0) { logfile.write("matchname is null\n"); return false; }

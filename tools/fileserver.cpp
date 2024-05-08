@@ -12,7 +12,8 @@
         a)发送端先发送文件信息（文件名、大小、修改时间）
         b)发送端发送文件（接收端根据文件名和大小接收文件，接收完后再设置文件修改时间）
         c)接收端收到文件后返回确认报文（文件名+接收结果），发送端接收确认报文
-
+          如果接收失败，接收端不退出，接收结果为false，发送端不处理文件（删除、备份）
+          如果发送端断开连接，接收端发送确保报文时会失败，届时再退出
 */
 
 #include "_public.h"
@@ -50,7 +51,7 @@ bool sendfile(const string& filename, const int filesize); // 发送一个文件
 bool ackmessage(const string& recvbuffer); // 处理确认报文
 
 void recvfilesmain();   // 接收文件的主函数
-bool _recvfiles();      // 执行一次接收任务的函数
+bool recvfile(const string& filename, const string& mtime, const int filesize); // 执行一次接收任务的函数，文件名用绝对路径
 
 void FathEXIT(int sig); // 父进程退出函数
 void ChldEXIT(int sig); // 子进程退出函数
@@ -121,6 +122,8 @@ int main(int argc, char* argv[])
         if (starg.clienttype == 1) sendfilesmain();
 
         if (starg.clienttype == 2) recvfilesmain();
+
+        ChldEXIT(0);
     }
 }
 
@@ -205,14 +208,14 @@ void sendfilesmain()
         if (_sendfiles(bcontinue) == false) 
         {
             logfile.write("[sendfilesmain: send files failed] _sendfiles()\n");
-            ChldEXIT(-1);
+            return;
         }
 
         if (bcontinue == false) // 如果未发送文件，就休眠，并发送心跳报文
         {
             sleep(starg.timetvl);
 
-            if (activetest() == false) break;
+            if (activetest() == false) return;
         }
     }
 }
@@ -263,11 +266,20 @@ bool _sendfiles(bool& bcontinue)
         while (delayed > 0)
         {
             // 接收对端的确认报文，时间设置为-1，表示不等待，如果接收缓冲区没有报文就继续发送文件
-            if (tcpserver.read(recvbuffer) == false) break;
+            if (tcpserver.read(recvbuffer, -1) == false) break;
 
             ackmessage(recvbuffer);
             --delayed;
         }  
+    }
+
+    // 接收剩余的确认报文
+    while (delayed > 0)
+    {
+        if (tcpserver.read(recvbuffer, 10) == false) break;
+
+        ackmessage(recvbuffer);
+        --delayed;
     }
 
     return true;
@@ -329,6 +341,93 @@ bool ackmessage(const string& recvbuffer)
             return false;
         }
     }   
+
+    return true;
+}
+
+void recvfilesmain()
+{
+    // 作为接收文件的一端，来自对端的报文有两种
+    // 心跳报文：返回确认报文
+    // 上传文件的请求报文（包含文件信息），准备接收文件，接收文件后返回确认报文
+
+    while (true)
+    {
+        if (tcpserver.read(recvbuffer) == false)
+        {
+            logfile.write("[recvfilesmain: recv buffer failed]\n");
+            return;
+        }
+        logfile.write("[recvfilesmain] recv %s\n", recvbuffer.c_str());
+
+        // 处理心跳报文
+        if (recvbuffer == "<activetest>ok</activetest>")
+        {
+            sendbuffer = "ok";
+            logfile.write("[recvfilesmain] send %s ... ", sendbuffer.c_str());
+            if (tcpserver.write(sendbuffer) == false)
+            {
+                logfile << "failed\n";
+                return;
+            }
+            logfile << "success\n";
+        }
+
+        // 处理上传文件的请求报文
+        if (recvbuffer.find("<filename>") != string::npos)
+        {   
+            string filename;
+            string mtime;
+            int filesize;
+
+            getxmlbuffer(recvbuffer, "filename", filename);
+            getxmlbuffer(recvbuffer, "mtime", mtime);
+            getxmlbuffer(recvbuffer, "filesize", filesize);
+
+            string localfile = sformat("%s/%s", starg.srvpath, filename.c_str());
+            sendbuffer = sformat("<filename>%s</filename>", filename.c_str());
+            if (recvfile(localfile, mtime, filesize) == false)
+                sendbuffer.append("<result>failed</result>");
+            else
+                sendbuffer.append("<result>success</result>");
+
+            // 返回确认报文
+            logfile.write("[recvfilesmain] send %s ... ", sendbuffer.c_str());
+            if (tcpserver.write(sendbuffer) == false)
+            {
+                logfile << "failed\n";
+                return;
+            }
+            logfile << "success\n";
+        }
+    }
+}
+
+bool recvfile(const string& filename, const string& mtime, const int filesize)
+{
+    int onread = 0;
+    int totalbytes = 0;
+    char buffer[1024];
+
+    cofile ofile;
+    if (ofile.open(filename, true, ios::out | ios::binary) == false) return false;
+
+    while (totalbytes < filesize)
+    {
+        memset(buffer, 0, sizeof(buffer));
+
+        onread = (filesize - totalbytes) > 0 ? 1024 : (filesize - totalbytes);
+
+        if (tcpserver.read(buffer, onread) == false) return false;
+
+        ofile.write(buffer, onread);
+
+        totalbytes += onread;
+    }
+    ofile.closeandrename();
+
+    // 文件时间用当前时间没有意义，应该与对端的文件时间保持一致
+    setmtime(filename, mtime);
 
     return true;
 }
