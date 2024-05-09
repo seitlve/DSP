@@ -272,7 +272,7 @@ bool appendtookfile(struct st_fileinfo &stfileinfo)
 
 void EXIT(int sig)
 {
-    logfile.write("[process exit] sig=%d", sig);
+    logfile.write("[process exit] sig=%d\n", sig);
 
     exit(0);
 }
