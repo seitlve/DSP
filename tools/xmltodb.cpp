@@ -452,7 +452,7 @@ void preparesql()
     colseq = 1;
     for (int i = 0; i < tcols.m_vallcols.size(); ++i)
     {   
-        if (tcols.m_vallcols[i].pkseq != 0); continue;
+        if (tcols.m_vallcols[i].pkseq != 0) continue;
 
         // keyid字段不需要处理
         if (strcmp(tcols.m_vallcols[i].colname,"keyid") == 0) continue;
@@ -468,7 +468,7 @@ void preparesql()
     // 再绑定where部分
     for (int i = 0; i < tcols.m_vallcols.size(); ++i)
     {
-        if (tcols.m_vallcols[i].pkseq == 0); continue;
+        if (tcols.m_vallcols[i].pkseq == 0) continue;
 
         stmtupt.bindin(colseq++, vcolvalue[i], tcols.m_vallcols[i].collen);
     }
