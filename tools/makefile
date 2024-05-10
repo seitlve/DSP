@@ -27,7 +27,7 @@ CFLAGS = -g
 #CFLAGS = -O2
 
 all:$(BINDIR)procctl $(BINDIR)checkproc $(BINDIR)deletefiles $(BINDIR)gzipfiles $(BINDIR)ftpgetfiles $(BINDIR)ftpputfiles \
-	$(BINDIR)tcpgetfiles $(BINDIR)tcpputfiles $(BINDIR)fileserver $(BINDIR)dminingoracle
+	$(BINDIR)tcpgetfiles $(BINDIR)tcpputfiles $(BINDIR)fileserver $(BINDIR)dminingoracle $(BINDIR)xmltodb
 
 $(BINDIR)procctl:procctl.cpp
 	g++ $(CFLAGS) -o $(BINDIR)procctl procctl.cpp
@@ -59,6 +59,9 @@ $(BINDIR)fileserver:fileserver.cpp $(PUBCPP)
 $(BINDIR)dminingoracle:dminingoracle.cpp $(PUBCPP)
 	g++ $(CFLAGS) -o $(BINDIR)dminingoracle dminingoracle.cpp $(PUBCPP) $(PUBINCL) $(ORACPP) $(ORAINCL) $(ORALIB) $(ORALIBS)
 
+$(BINDIR)xmltodb:xmltodb.cpp $(PUBCPP) _tools.cpp
+	g++ $(CFLAGS) -o $(BINDIR)xmltodb xmltodb.cpp $(PUBCPP) $(PUBINCL) $(ORACPP) $(ORAINCL) _tools.cpp $(ORALIB) $(ORALIBS)
+
 clean:
 	rm -rf $(BINDIR)procctl $(BINDIR)checkproc $(BINDIR)deletefiles $(BINDIR)gzipfiles $(BINDIR)ftpgetfiles $(BINDIR)ftpputfiles
-	rm -rf $(BINDIR)tcpgetfiles $(BINDIR)tcpputfiles $(BINDIR)fileserver $(BINDIR)dminingoracle
+	rm -rf $(BINDIR)tcpgetfiles $(BINDIR)tcpputfiles $(BINDIR)fileserver $(BINDIR)dminingoracle $(BINDIR)xmltodb

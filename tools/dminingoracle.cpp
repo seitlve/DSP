@@ -1,6 +1,6 @@
 /*
     dminingoracle.cpp
-    本程序是共享平台的公共功能模块，用于从Oracle数据库源表抽取数据，生成xml文件
+    本程序是数据中心的公共功能模块，用于从Oracle数据库源表抽取数据，生成xml文件
     数据抽取分为增量抽取和全量抽取
     如果向程序传递了递增字段，则为增量抽取
     对于增量抽取，需要额外保存每次抽取的数据中递增字段的最大值
@@ -227,7 +227,7 @@ bool _dminingoracle()
         for (int i = 0; i <fieldname.size(); ++i)
             ofile.writeline("<%s>%s</%s>", 
                 fieldname[i].c_str(), fieldvalue[i].c_str(), fieldname[i].c_str());
-        ofile.writeline("</endl>\n"); // 写入每行结束标志
+        ofile.writeline("<endl/>\n"); // 写入每行结束标志
 
         // 如果记录数达到starg.maxcount行就关闭当前文件
         if ((starg.maxcount > 0) && (stmtsel.rpc() % starg.maxcount == 0))
@@ -360,7 +360,7 @@ void _help()
     "<timeout>30</timeout><pname>dminingoracle_ZHOBTMIND_togxpt</pname>"\
     "<maxcount>1000</maxcount><connstr1>scott/scottpwd@snorcl11g_132</connstr1>\"\n\n"
 
-    "本程序是共享平台的公共功能模块，用于从Oracle数据库源表抽取数据，生成xml文件\n"
+    "本程序是数据中心的公共功能模块，用于从Oracle数据库源表抽取数据，生成xml文件\n"
     "logfilename 本程序运行的日志文件\n"
     "xmlbuffer   本程序运行的参数，用xml表示，具体如下：\n\n"
 
