@@ -47,11 +47,11 @@ ccmdstr fieldlen;       // 用于存放字段长度
 int maxincvalue;        // 递增字段最大值
 int incfieldpos = -1;   // 递增字段在fieldstr中的位置
 
-bool instarttime();     // 用于判断程序是否处于运行时间
 bool readincfield();    // 读取递增字段最大值。
 bool _dminingoracle();  // 数据抽取的主函数
 bool writeincfield();   // 将最大值写入数据库表或文件中
 
+bool instarttime();     // 用于判断程序是否处于运行时间
 void EXIT(int sig);     // 退出函数
 void _help();           // 帮助文档
 bool _xmltoarg(const string& xmlbuffer); // 解析xml到starg中
@@ -104,17 +104,6 @@ int main(int argc, char* argv[])
     _dminingoracle();
 
     return 0;
-}
-
-bool instarttime()
-{
-    if (strlen(starg.starttime) > 0)
-    {
-        string strhh24 = ltime1("hh24", 0); // 获取当前时间，只需要小时
-        if (strstr(starg.starttime, strhh24.c_str()) != 0) return false;
-    }
-
-    return true;
 }
 
 bool readincfield()
@@ -329,6 +318,18 @@ bool writeincfield()
     else return false;
 
     return true;  
+}
+
+bool instarttime()
+{
+    if (strlen(starg.starttime) > 0)
+    {
+        string strhh24 = ltime1("hh24", 0); // 获取当前时间，只需要小时
+        // strstr返回字符串中首次出现子串的地址，返回0表示没找到
+        if (strstr(starg.starttime, strhh24.c_str()) == 0) return false;
+    }
+
+    return true;
 }
 
 void EXIT(int sig)

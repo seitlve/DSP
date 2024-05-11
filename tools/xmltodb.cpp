@@ -530,29 +530,6 @@ void EXIT(int sig)
 
 void _help()
 {
-    printf("Using:/MDC/bin/tools/xmltodb logfilename xmlbuffer\n\n");
-
-    printf("Sample:/MDC/bin/tools/procctl 10 /MDC/bin/tools/xmltodb /MDC/log/tools/xmltodb_vip.log "\
-              "\"<connstr>idc/idcpwd@snorcl11g_132</connstr><charset>Simplified Chinese_China.AL32UTF8</charset>"\
-              "<inifilename>/workspace/MDC/idc/ini/xmltodb.xml</inifilename>"\
-              "<xmlpath>/MDC/data/xmltodb/vip</xmlpath><xmlpathbak>/MDC/data/xmltodb/vipbak</xmlpathbak>"\
-              "<xmlpatherr>/MDC/data/xmltodb/viperr</xmlpatherr>"\
-              "<timetvl>5</timetvl><timeout>63</timeout><pname>xmltodb_vip</pname>\"\n\n");
-
-    printf("本程序是数据中心的公共功能模块，用于把xml文件入库到Oracle的表中\n");
-    printf("logfilename   本程序运行的日志文件\n");
-    printf("xmlbuffer     本程序运行的参数，用xml表示，具体如下：\n\n");
-
-    printf("connstr     数据库的连接参数，格式：username/passwd@tnsname\n");
-    printf("charset     数据库的字符集，这个参数要与数据源数据库保持一致，否则会出现中文乱码的情况\n");
-    printf("inifilename 数据入库的参数配置文件\n");
-    printf("xmlpath     待入库xml文件存放的目录\n");
-    printf("xmlpathbak  xml文件入库后的备份目录\n");
-    printf("xmlpatherr  入库失败的xml文件存放的目录\n");
-    printf("timetvl     扫描xmlpath目录的时间间隔（执行入库任务的时间间隔），单位：秒，视业务需求而定，2-30之间\n");
-    printf("timeout     本程序的超时时间，单位：秒，视xml文件大小而定，建议设置30以上\n");
-    printf("pname       进程名，尽可能采用易懂的、与其它进程不同的名称，方便故障排查\n\n");
-
     cout << "\n\n"
     "Using:/MDC/bin/tools/xmltodb logfilename xmlbuffer\n\n"
     "Example:\n"
