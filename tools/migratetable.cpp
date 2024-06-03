@@ -214,9 +214,9 @@ void _help()
     "Using:migratetable logfilename xmlbuffer\n\n"
     "Example:\n"
     "/MDC/bin/tools/procctl 3600 /MDC/bin/tools/migratetable /MDC/log/tools/migratetable_ZHOBTMIND1.log "
-    "\"<connstr>idc/idcpwd@snorcl11g_132</connstr><tname>T_ZHOBTMIND1</tname>"\
-    "<totname>T_ZHOBTMIND1_HIS</totname><keycol>rowid</keycol><where>where ddatetime<sysdate-0.03</where>"\
-    "<maxcount>10</maxcount><starttime>22,23,00,01,02,03,04,05,06,13</starttime>"\
+    "\"<connstr>idc/idcpwd@snorcl11g_132</connstr><tname>T_ZHOBTMIND1</tname>"
+    "<totname>T_ZHOBTMIND1_HIS</totname><keycol>rowid</keycol><where>where ddatetime<sysdate-0.03</where>"
+    "<maxcount>10</maxcount><starttime>22,23,00,01,02,03,04,05,06,13</starttime>"
     "<timeout>120</timeout><pname>migratetable_ZHOBTMIND1</pname>\"\n\n"
 
     "本程序是共享平台的公共功能模块，用于迁移表中的数据\n"
@@ -230,8 +230,8 @@ void _help()
     "keycol      待迁移数据表的唯一键字段名，可以用记录编号，如keyid，建议用rowid，效率最高\n"
     "where       待迁移的数据需要满足的条件，即SQL语句中的where部分\n"
     "maxcount    执行一次SQL语句删除的记录数，建议在100-500之间\n"
-    "starttime   程序运行的时间区间，例如02,13表示：如果程序运行时，踏中02时和13时则运行，其它时间不运行"\
-                "如果starttime为空，本参数将失效，只要本程序启动就会执行数据迁移，"\
+    "starttime   程序运行的时间区间，例如02,13表示：如果程序运行时，踏中02时和13时则运行，其它时间不运行"
+                "如果starttime为空，本参数将失效，只要本程序启动就会执行数据迁移，"
                 "为了减少对数据库的压力，数据迁移一般在业务最闲的时候时进行\n"
     "timeout     本程序的超时时间，单位：秒，视xml文件大小而定，建议设置30以上\n"
     "pname       进程名，尽可能采用易懂的、与其它进程不同的名称，方便故障排查\n\n";
