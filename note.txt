@@ -1,5 +1,3 @@
-笔记文件
-
 0.如果无法将本地仓库同步到github上的远程仓库，在cmd执行下面两行命令，再重启vscode
     git config --global --unset http.proxy
     git config --global --unset https.proxy
