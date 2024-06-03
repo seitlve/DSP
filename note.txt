@@ -1,6 +1,8 @@
+笔记文件
+
 0.如果无法将本地仓库同步到github上的远程仓库，在cmd执行下面两行命令，再重启vscode
     git config --global --unset http.proxy
-    git config --global --unset https.proxy 
+    git config --global --unset https.proxy
 
 1.exit()和return的区别
     main函数中无区别，在其它函数中，return结束当前函数，exit结束当前进程
